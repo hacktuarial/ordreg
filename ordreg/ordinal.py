@@ -47,7 +47,7 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
 
         np.random.seed(self.random_state)
         result = minimize(fun=objective,
-                          x0=np.random.randn(X.shape[1] + y.shape[1] - 1))
+                          x0=np.zeros(X.shape[1] + y.shape[1] - 1))
 
         eta_hat = result["x"][:(y.shape[1]-1)]
         self.intercept_ = np.append(eta_hat[0],
