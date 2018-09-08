@@ -5,8 +5,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 
 
 class OrdinalRegression(BaseEstimator, ClassifierMixin):
-    def __init__(self, penalty='l2', C=1.0, random_state=None):
-        self.penalty = penalty
+    def __init__(self, C=0.0, random_state=None):
         self.C = C
         self.random_state = random_state
 
@@ -34,20 +33,15 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
 
             mass = np.diff(dfunc, axis=1)
 
-            if self.penalty == "l2":
-                norm = np.sum(beta**2)
-            elif self.penalty == "l1":
-                norm = np.sum(abs(beta))
-            else:
-                raise ValueError(("penalty must be 'l2' or 'l1',"
-                                  " {penalty} was provided".
-                                  format(penalty=self.penalty)))
+            v = (- np.sum(np.log(np.sum(mass * y, axis=1))) +
+                 self.C * np.sum(beta**2))
 
-            return - np.sum(np.log(np.sum(mass * y, axis=1))) + self.C * norm
+            return v
 
         np.random.seed(self.random_state)
         result = minimize(fun=objective,
-                          x0=np.zeros(X.shape[1] + y.shape[1] - 1))
+                          x0=np.zeros(X.shape[1] + y.shape[1] - 1),
+                          method="L-BFGS-B")
 
         eta_hat = result["x"][:(y.shape[1]-1)]
         self.intercept_ = np.append(eta_hat[0],
