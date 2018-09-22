@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.optimize import minimize
+from scipy import sparse
 from sklearn.base import BaseEstimator, ClassifierMixin
-# from sklearn.utils import check_X_y
+from sklearn.utils import check_X_y
 
 
 class OrdinalRegression(BaseEstimator, ClassifierMixin):
@@ -10,6 +11,10 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
 
     def fit(self, X, y):
+        X, y = check_X_y(X, y, accept_sparse=True, multi_output=True)
+        if sparse.issparse(y):
+            y = y.todense()
+
         def objective(params):
             """
             Return the penalized negative log likelihood
@@ -21,7 +26,7 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
             beta = params[(y.shape[1]-1):]
             alpha = np.append(eta[0], np.exp(eta[1:])).cumsum()
 
-            s = np.dot(X, beta)
+            s = X.dot(beta)
             dfunc = 1 / (np.exp(-(np.repeat(s[:, np.newaxis],
                                             len(alpha),
                                             axis=1) + alpha)) + 1)
@@ -33,7 +38,7 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
 
             mass = np.diff(dfunc, axis=1)
 
-            v = (- np.sum(np.log(np.sum(mass * y, axis=1))) +
+            v = (- np.sum(np.log(np.sum(np.multiply(mass, y), axis=1))) +
                  self.C * np.sum(beta**2))
 
             return v
@@ -54,7 +59,7 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
         if not hasattr(self, "coef_"):
             raise AttributeError("Model has not been fit")
 
-        s = np.dot(X, self.coef_)
+        s = X.dot(self.coef_)
 
         dfunc = 1 / (np.exp(-(np.repeat(s[:, np.newaxis],
                                         len(self.intercept_),
