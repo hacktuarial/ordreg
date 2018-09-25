@@ -6,8 +6,8 @@ def expit(x):
 
 
 def jacobian(X, y, C, params):
-    eta = params[:(y.shape[1]-1)]
-    beta = params[(y.shape[1]-1):]
+    eta = params[: (y.shape[1] - 1)]
+    beta = params[(y.shape[1] - 1) :]
     alpha = np.append(eta[0], np.exp(eta[1:])).cumsum()
     IL = _l2_clogistic_gradient_IL(X, alpha, beta)
     grad_alpha = _l2_clogistic_gradient_intercept(IL=IL, Y=y, alpha=alpha)
@@ -19,11 +19,10 @@ def jacobian(X, y, C, params):
 
 def _l2_clogistic_gradient_alpha_eta(eta):
     J = len(eta) + 1
-    X = np.zeros(shape=(J-1, J-1))
-    X[:, 1] = 1
-    for j in range(1, J-1):
-        X[j] = np.exp(eta[j])
-    return X.T
+    X = np.zeros(shape=(J - 1, J - 1))
+    for i in range(J - 1):
+        X[i:, i] = np.exp(eta[i])
+    return X
 
 
 def l2_clogistic_gradient_slope(X, Y, IL, beta, C):
@@ -90,12 +89,17 @@ def _l2_clogistic_gradient_intercept(IL, Y, alpha):
         # there are J levels, and J-1 intercepts
         # indexed from 0 to J-2
         if j == 0:
-            grad_alpha[j] = np.dot(Y[:, j], 1 - IL[:, j]) -\
-                            np.dot(Y[:, j + 1], exp_int[j] / (exp_int[j + 1] - exp_int[j]) + IL[:, j])
+            grad_alpha[j] = np.dot(Y[:, j], 1 - IL[:, j]) - np.dot(
+                Y[:, j + 1], exp_int[j] / (exp_int[j + 1] - exp_int[j]) + IL[:, j]
+            )
         elif j < J - 2:
-            grad_alpha[j] = np.dot(Y[:, j], exp_int[j] / (exp_int[j] - exp_int[j - 1]) - IL[:, j]) - \
-                            np.dot(Y[:, j + 1], exp_int[j] / (exp_int[j + 1] - exp_int[j]) + IL[:, j])
+            grad_alpha[j] = np.dot(
+                Y[:, j], exp_int[j] / (exp_int[j] - exp_int[j - 1]) - IL[:, j]
+            ) - np.dot(
+                Y[:, j + 1], exp_int[j] / (exp_int[j + 1] - exp_int[j]) + IL[:, j]
+            )
         else:  # j == J-2. the last intercept
-            grad_alpha[j] = np.dot(Y[:, j], exp_int[j] / (exp_int[j] - exp_int[j - 1]) - IL[:, j]) - \
-                            np.dot(Y[:, j + 1], IL[:, j])
+            grad_alpha[j] = np.dot(
+                Y[:, j], exp_int[j] / (exp_int[j] - exp_int[j - 1]) - IL[:, j]
+            ) - np.dot(Y[:, j + 1], IL[:, j])
     return -grad_alpha
