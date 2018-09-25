@@ -2,12 +2,15 @@ import numpy as np
 from ordreg.jacobian import jacobian
 
 def test_finite_differences():
-    X = np.random.normal(size=(100, 4))
-    y = np.zeros(shape=(100, 3))
-    for i in range(y.shape[0]):
-        j = np.random.randint(y.shape[1])
+    N = 1000
+    J = 4
+    P = 5
+    X = np.random.normal(size=(N, P))
+    y = np.zeros(shape=(N, J))
+    for i in range(N):
+        j = np.random.randint(J)
         y[i, j] = 1
-    params = np.random.normal(size=X.shape[1] + y.shape[1] - 1)
+    params = np.random.normal(size=P + J - 1)
     C = np.random.uniform()
     actual = jacobian(X=X, y=y, C=C, params=params)
     fte_diff = _finite_differences(X=X, y=y, C=C, params=params)

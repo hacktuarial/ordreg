@@ -1,5 +1,8 @@
 import numpy as np
-from scipy.special import expit
+
+
+def expit(x):
+    return 1. / (1 + np.exp(-x))
 
 
 def jacobian(X, y, C, params):
@@ -15,12 +18,12 @@ def jacobian(X, y, C, params):
 
 
 def _l2_clogistic_gradient_alpha_eta(eta):
-    J = len(eta)
-    X = np.zeros(shape=(J, J))
+    J = len(eta) + 1
+    X = np.zeros(shape=(J-1, J-1))
     X[:, 1] = 1
-    for j in range(1, J):
-        X[j] = eta[j] * np.exp(eta[j])
-    return X
+    for j in range(1, J-1):
+        X[j] = np.exp(eta[j])
+    return X.T
 
 
 def l2_clogistic_gradient_slope(X, Y, IL, beta, C):
@@ -44,7 +47,7 @@ def l2_clogistic_gradient_slope(X, Y, IL, beta, C):
         else:  # j == J-1. this is the highest level of response
             grad_beta -= XT.dot(Y[:, j] * IL[:, j - 1])
     grad_beta -= C * beta
-    return grad_beta
+    return -grad_beta
 
 
 def _l2_clogistic_gradient_IL(X, alpha, beta):
@@ -95,4 +98,4 @@ def _l2_clogistic_gradient_intercept(IL, Y, alpha):
         else:  # j == J-2. the last intercept
             grad_alpha[j] = np.dot(Y[:, j], exp_int[j] / (exp_int[j] - exp_int[j - 1]) - IL[:, j]) - \
                             np.dot(Y[:, j + 1], IL[:, j])
-    return grad_alpha
+    return -grad_alpha
