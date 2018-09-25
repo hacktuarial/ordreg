@@ -3,6 +3,7 @@ from scipy.optimize import minimize
 from scipy import sparse
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils import check_X_y
+from .jacobian import jacobian
 
 
 class OrdinalRegression(BaseEstimator, ClassifierMixin):
@@ -43,9 +44,13 @@ class OrdinalRegression(BaseEstimator, ClassifierMixin):
 
             return v
 
+        def first_order(params):
+            return jacobian(X=X, y=y, C=self.C, params=params)
+
         np.random.seed(self.random_state)
         result = minimize(fun=objective,
                           x0=np.zeros(X.shape[1] + y.shape[1] - 1),
+                          jac=first_order,
                           method="L-BFGS-B")
 
         eta_hat = result["x"][:(y.shape[1]-1)]
