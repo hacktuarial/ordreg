@@ -20,7 +20,8 @@ def jacobian(X, y, C, params):
 def _l2_clogistic_gradient_alpha_eta(eta):
     J = len(eta) + 1
     X = np.zeros(shape=(J - 1, J - 1))
-    for i in range(J - 1):
+    X[:, 0] = 1
+    for i in range(1, J - 1):
         X[i:, i] = np.exp(eta[i])
     return X
 
