@@ -2,19 +2,20 @@ import numpy as np
 from ordreg.jacobian import jacobian
 
 def test_finite_differences():
+    np.random.seed(1930)
     N = 1000
     J = 4
     P = 5
     X = np.random.normal(size=(N, P))
     y = np.zeros(shape=(N, J))
+    params = np.random.normal(size=P + J - 1)
     for i in range(N):
         j = np.random.randint(J)
         y[i, j] = 1
-    params = np.random.normal(size=P + J - 1)
     C = np.random.uniform()
     actual = jacobian(X=X, y=y, C=C, params=params)
-    fte_diff = _finite_differences(X=X, y=y, C=C, params=params)
-    assert np.allclose(actual, fte_diff)
+    fte_diff = _finite_differences(X=X, y=y, C=C, params=params, eps=1e-9)
+    assert np.allclose(actual, fte_diff, atol=0, rtol=1e-2)
 
 def objective(X, y, C, params):
     """
@@ -41,9 +42,8 @@ def objective(X, y, C, params):
     return v
 
 def _finite_differences(X, y, C, params, eps=1e-5):
-    fdiff = np.zeros(shape=(len(params), ))
+    fdiff = params * 0
     for i in range(len(params)):
-        new_params = params[:]
         delta = np.zeros(len(params))
         delta[i] = eps
         forward = objective(X=X, y=y, C=C, params=params + delta)
