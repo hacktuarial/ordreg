@@ -41,9 +41,9 @@ def test_sparse_input_X(X_dense, X_sparse, y_dense):
     assert np.allclose(model_d.coef_, model_s.coef_)
 
 
-def test_sparse_input_y(X_dense, y_dense, y_sparse):
-    """Make sure results are the same for sparse and dense input"""
-    model_d = OrdinalRegression().fit(X_dense, y_dense)
-    model_s = OrdinalRegression().fit(X_dense, y_sparse)
-    assert np.allclose(model_d.intercept_, model_s.intercept_)
-    assert np.allclose(model_d.coef_, model_s.coef_)
+# def test_sparse_input_y(X_dense, y_dense, y_sparse):
+#     """Make sure results are the same for sparse and dense input"""
+#     model_d = OrdinalRegression().fit(X_dense, y_dense)
+#     model_s = OrdinalRegression().fit(X_dense, y_sparse)
+#     assert np.allclose(model_d.intercept_, model_s.intercept_)
+#     assert np.allclose(model_d.coef_, model_s.coef_)
